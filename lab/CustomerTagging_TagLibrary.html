@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Tag Library v2.2</title>
+<style>
+  :root {
+    --bg:      #0D1B2A;
+    --bg2:     #1A2E44;
+    --bg3:     #0A1520;
+    --accent:  #00C2FF;
+    --white:   #FFFFFF;
+    --light:   #B0C4DE;
+    --green:   #00E596;
+    --yellow:  #FFD700;
+    --orange:  #FF8C42;
+    --red:     #FF6B6B;
+    --ex-bg:   #0D1B2A;
+    --ov-bg:   #001C2A;
+    --new-bg:  #071A10;
+    --ex-hl:   #152535;
+    --ov-hl:   #002535;
+    --new-hl:  #0A2518;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--light);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* ── Top Bar ── */
+  .topbar {
+    background: #060F18;
+    padding: 20px 32px;
+    border-bottom: 1px solid #1A3A52;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .title { color: var(--white); font-size: 18px; font-weight: 700; flex: 0 0 auto; }
+  .title span { color: var(--accent); }
+  .search-box {
+    flex: 1 1 220px; min-width: 160px;
+    background: #1A2E44; border: 1px solid #2A4A64;
+    color: var(--white); padding: 6px 12px; border-radius: 6px;
+    font-size: 13px; outline: none;
+  }
+  .search-box::placeholder { color: #5A7A9A; }
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 5px 12px; border-radius: 20px; border: 1px solid #2A4A64;
+    background: transparent; color: var(--light); cursor: pointer;
+    font-size: 12px; transition: all 0.15s;
+  }
+  .filter-btn:hover, .filter-btn.active { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.f-ex.active   { border-color: #5A8AB0; color: #5A8AB0; }
+  .filter-btn.f-ov.active   { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.f-new.active  { border-color: var(--green); color: var(--green); }
+  .filter-btn.f-s.active    { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.f-v.active    { border-color: var(--yellow); color: var(--yellow); }
+  .filter-btn.f-m.active    { border-color: var(--orange); color: var(--orange); }
+  .filter-btn.f-pa.active   { border-color: #8A7AFF; color: #8A7AFF; }
+  .filter-btn.f-pb.active   { border-color: #FF8C42; color: #FF8C42; }
+  .result-count { color: #5A7A9A; font-size: 12px; margin-left: auto; white-space: nowrap; }
+
+  /* ── Stats Bar ── */
+  .statsbar {
+    background: #0A1520;
+    border-bottom: 1px solid #1A3A52;
+    padding: 10px 32px;
+  }
+  .statsbar-inner {
+    max-width: 1400px; margin: 0 auto;
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+  }
+  .stat-group { display: flex; gap: 12px; align-items: center; }
+  .stat-label { color: #5A7A9A; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-item { font-size: 12px; }
+
+  /* ── Main ── */
+  .main { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+
+  /* ── Category Section ── */
+  .cat-section { margin-bottom: 32px; }
+  .cat-header {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px;
+    background: #0A1520;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 1px;
+  }
+  .cat-emoji { font-size: 18px; }
+  .cat-name  { color: var(--white); font-weight: 700; font-size: 15px; }
+  .cat-total { color: var(--accent); font-size: 13px; font-weight: 600;
+                background: #001A2A; padding: 2px 8px; border-radius: 10px; }
+  .cat-pills { display: flex; gap: 6px; margin-left: auto; }
+  .cnt-pill  { padding: 2px 8px; border-radius: 10px; font-size: 11px; }
+  .cnt-ex    { background: #1A2E44; color: #7A9AB0; }
+  .cnt-ov    { background: #001829; color: var(--accent); }
+  .cnt-new   { background: #071A10; color: var(--green); }
+
+  /* ── Tag Table ── */
+  .tag-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12.5px;
+  }
+  .tag-table thead tr {
+    background: #060F18;
+  }
+  .tag-table th {
+    padding: 7px 10px; text-align: left;
+    color: #5A7A9A; font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    font-weight: 600; border-bottom: 1px solid #1A3A52;
+  }
+  .tag-table td { padding: 7px 10px; border-bottom: 1px solid #111F2E; vertical-align: top; }
+
+  /* Row colors by source */
+  .row-ex  { background: var(--ex-bg); }
+  .row-ov  { background: var(--ov-bg); }
+  .row-new { background: var(--new-bg); }
+  .row-ex:hover  { background: var(--ex-hl); }
+  .row-ov:hover  { background: var(--ov-hl); }
+  .row-new:hover { background: var(--new-hl); }
+
+  /* Hidden row */
+  .tag-table tr.hidden { display: none; }
+
+  /* Tag name */
+  .tag-cell code {
+    background: #0A1520; color: var(--accent);
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 11.5px; font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+  .row-ov .tag-cell code  { color: var(--accent); }
+  .row-new .tag-cell code { color: var(--green); }
+  .row-ex .tag-cell code  { color: #7AB0CC; }
+
+  /* Signal cell */
+  .sig-cell { color: #6A8A9A; font-size: 11.5px; }
+
+  /* Badges */
+  .badge {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-ex  { background: #1A2E44; color: #7A9AB0; }
+  .badge-ov  { background: #001829; color: var(--accent); border: 1px solid #003A52; }
+  .badge-new { background: #071A10; color: var(--green); border: 1px solid #0A3020; }
+
+  .stab {
+    display: inline-block; padding: 2px 7px; border-radius: 4px;
+    font-size: 11px; font-weight: 700;
+  }
+  .stab-s { background: #001829; color: var(--accent); }
+  .stab-v { background: #1A1400; color: var(--yellow); }
+  .stab-m { background: #1A0D00; color: var(--orange); }
+
+  .path {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .path-a { background: #1A1A3A; color: #8A7AFF; }
+  .path-b { background: #1A0D00; color: var(--orange); }
+
+  /* ── Legend ── */
+  .legend {
+    background: #060F18; border: 1px solid #1A3A52;
+    border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;
+    display: flex; gap: 32px; flex-wrap: wrap;
+  }
+  .legend-group { display: flex; flex-direction: column; gap: 6px; }
+  .legend-title { color: #5A7A9A; font-size: 11px; text-transform: uppercase;
+                   letter-spacing: 0.05em; margin-bottom: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-desc { color: #6A8A9A; font-size: 11px; }
+</style>
+</head>
+<body>
+
+<!-- ── Top Bar ── -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="title">Customer Tag Library <span>v2.2</span></div>
+    <input class="search-box" id="searchBox" placeholder="Search tag or definition..." oninput="applyFilters()">
+    <div class="filter-group">
+      <span style="color:#5A7A9A;font-size:11px;align-self:center">SOURCE</span>
+      <button class="filter-btn f-ex"  onclick="toggleFilter('source','existing')">Existing</button>
+      <button class="filter-btn f-ov"  onclick="toggleFilter('source','overlap')">Overlap</button>
+      <button class="filter-btn f-new" onclick="toggleFilter('source','new')">New</button>
+    </div>
+    <div class="filter-group">
+      <span style="color:#5A7A9A;font-size:11px;align-self:center">STABILITY</span>
+      <button class="filter-btn f-s" onclick="toggleFilter('stab','s')">S · Stable</button>
+      <button class="filter-btn f-v" onclick="toggleFilter('stab','v')">V · Variable</button>
+      <button class="filter-btn f-m" onclick="toggleFilter('stab','m')">M · Momentum</button>
+    </div>
+    <div class="filter-group">
+      <span style="color:#5A7A9A;font-size:11px;align-self:center">PATH</span>
+      <button class="filter-btn f-pa" onclick="toggleFilter('path','a')">Path A</button>
+      <button class="filter-btn f-pb" onclick="toggleFilter('path','b')">Path B</button>
+    </div>
+    <div class="result-count" id="resultCount">288 tags</div>
+  </div>
+</div>
+
+<!-- ── Stats Bar ── -->
+<div class="statsbar">
+  <div class="statsbar-inner">
+    <div class="stat-group">
+      <span class="stat-label">Source</span>
+      <span class="stat-item" style="color:#7A9AB0">193 Existing</span>
+      <span class="stat-item" style="color:var(--accent)">55 Overlap</span>
+      <span class="stat-item" style="color:var(--green)">40 New</span>
+    </div>
+    <div style="width:1px;height:20px;background:#1A3A52"></div>
+    <div class="stat-group">
+      <span class="stat-label">Stability</span>
+      <span class="stat-item" style="color:var(--accent)">211 Stable</span>
+      <span class="stat-item" style="color:var(--yellow)">63 Variable</span>
+      <span class="stat-item" style="color:var(--orange)">14 Momentum</span>
+    </div>
+    <div style="width:1px;height:20px;background:#1A3A52"></div>
+    <div class="stat-group">
+      <span class="stat-label">Path</span>
+      <span class="stat-item" style="color:#8A7AFF">221 Path A (no enrichment needed)</span>
+      <span class="stat-item" style="color:var(--orange)">67 Path B (enrichment required)</span>
+    </div>
+    <div style="width:1px;height:20px;background:#1A3A52"></div>
+    <div class="stat-group">
+      <span class="stat-label">Total</span>
+      <span class="stat-item" style="color:var(--white);font-weight:700">288 tags  ·  18 categories</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-group">
+      <div class="legend-title">Source</div>
+      <div class="legend-item">
+        <span class="badge badge-ex">Existing</span>
+        <span class="legend-desc">มีอยู่แล้ว — ไม่มี enrichment tag ตรงๆ</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge badge-ov">Overlap</span>
+        <span class="legend-desc">มีอยู่แล้ว + ตรงกับ enrichment tag ของทีม</span>
+      </div>
+      <div class="legend-item">
+        <span class="badge badge-new">New</span>
+        <span class="legend-desc">เพิ่มใหม่จาก enrichment review</span>
+      </div>
+    </div>
+    <div class="legend-group">
+      <div class="legend-title">Stability</div>
+      <div class="legend-item">
+        <span class="stab stab-s">S · Stable</span>
+        <span class="legend-desc">พฤติกรรมหลัก — tag churn &lt; 20%/เดือน</span>
+      </div>
+      <div class="legend-item">
+        <span class="stab stab-v">V · Variable</span>
+        <span class="legend-desc">event-based / seasonal — churn สูงเป็นเรื่องปกติ</span>
+      </div>
+      <div class="legend-item">
+        <span class="stab stab-m">M · Momentum</span>
+        <span class="legend-desc">transitional — เปลี่ยนได้ แต่ค่อยๆ</span>
+      </div>
+    </div>
+    <div class="legend-group">
+      <div class="legend-title">Path</div>
+      <div class="legend-item">
+        <span class="path path-a">Path A</span>
+        <span class="legend-desc">ทำได้เลย — ไม่ต้องรอ Merchant Enrichment</span>
+      </div>
+      <div class="legend-item">
+        <span class="path path-b">Path B</span>
+        <span class="legend-desc">ต้องรอ Enrichment (direct mapping)</span>
+      </div>
+    </div>
+    <div class="legend-group" style="margin-left:auto;text-align:right">
+      <div class="legend-title">ทีม Data Science  |  เมษายน 2025</div>
+      <div style="color:var(--white);font-size:14px;font-weight:700;margin-top:4px">
+        288 tags  ·  18 categories
+      </div>
+      <div style="color:#5A7A9A;font-size:11px;margin-top:2px">
+        Click column headers to sort  ·  Use filters above to narrow
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Sections -->
+  
+<section class="cat-section" data-cat="food & dining">
+  <div class="cat-header">
+    <span class="cat-emoji">🍽️</span>
+    <span class="cat-name">Food & Dining</span>
+    <span class="cat-total">47 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">16 Existing</span><span class="cnt-pill cnt-ov">17 Overlap</span><span class="cnt-pill cnt-new">14 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="frequent_diner" data-def="กินข้าวนอกบ้าน ≥ 10 txn/เดือน"><td class="tag-cell"><code>frequent_diner</code></td><td>กินข้าวนอกบ้าน ≥ 10 txn/เดือน</td><td class="sig-cell">MCC: Dining</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="fast_food_regular" data-def="fast food ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>fast_food_regular</code></td><td>fast food ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">Merchant: McDonald's, KFC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="fine_dining_enthusiast" data-def="avg ticket > P75"><td class="tag-cell"><code>fine_dining_enthusiast</code></td><td>avg ticket > P75</td><td class="sig-cell">MCC + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="cafe_hopper" data-def="ร้านกาแฟ ≥ 6 ครั้ง/เดือน หลาย merchant"><td class="tag-cell"><code>cafe_hopper</code></td><td>ร้านกาแฟ ≥ 6 ครั้ง/เดือน หลาย merchant</td><td class="sig-cell">MCC: Coffee</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="bubble_tea_addict" data-def="ชานมไข่มุก ≥ 8 ครั้ง/เดือน"><td class="tag-cell"><code>bubble_tea_addict</code></td><td>ชานมไข่มุก ≥ 8 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Gong Cha, ChaTraMue</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="delivery_dependent" data-def="≥ 50% dining ผ่าน delivery app"><td class="tag-cell"><code>delivery_dependent</code></td><td>≥ 50% dining ผ่าน delivery app</td><td class="sig-cell">Merchant: GrabFood, LINE MAN</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="brunch_person" data-def="dining Sat-Sun 09:00–13:00 บ่อย"><td class="tag-cell"><code>brunch_person</code></td><td>dining Sat-Sun 09:00–13:00 บ่อย</td><td class="sig-cell">MCC + Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="late_night_diner" data-def="dining หลัง 22:00 ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>late_night_diner</code></td><td>dining หลัง 22:00 ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">MCC + Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="bakery_lover" data-def="ร้านเบเกอรี่บ่อย"><td class="tag-cell"><code>bakery_lover</code></td><td>ร้านเบเกอรี่บ่อย</td><td class="sig-cell">Merchant: Yamazaki, BreadTalk</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="budget_eater" data-def="avg ticket dining < P25"><td class="tag-cell"><code>budget_eater</code></td><td>avg ticket dining < P25</td><td class="sig-cell">MCC + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="solo_diner" data-def="avg ticket ต่ำ + merchant ไม่ซ้ำ"><td class="tag-cell"><code>solo_diner</code></td><td>avg ticket ต่ำ + merchant ไม่ซ้ำ</td><td class="sig-cell">Amount pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="street_food_lover" data-def="ticket < 150 บาท ร้านขนาดเล็ก"><td class="tag-cell"><code>street_food_lover</code></td><td>ticket < 150 บาท ร้านขนาดเล็ก</td><td class="sig-cell">Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="dessert_lover" data-def="ร้านขนม/ไอศกรีม ≥ 6 ครั้ง/เดือน"><td class="tag-cell"><code>dessert_lover</code></td><td>ร้านขนม/ไอศกรีม ≥ 6 ครั้ง/เดือน</td><td class="sig-cell">Merchant: After You, Swensen's</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="group_diner" data-def="avg ticket > 2x solo avg สม่ำเสมอ"><td class="tag-cell"><code>group_diner</code></td><td>avg ticket > 2x solo avg สม่ำเสมอ</td><td class="sig-cell">Amount pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="work_lunch_regular" data-def="dining weekday 11:00–14:00 ≥ 15 ครั้ง/เดือน"><td class="tag-cell"><code>work_lunch_regular</code></td><td>dining weekday 11:00–14:00 ≥ 15 ครั้ง/เดือน</td><td class="sig-cell">MCC + Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="coffee_loyalist" data-def="≥ 80% coffee txn ที่ร้านเดิม"><td class="tag-cell"><code>coffee_loyalist</code></td><td>≥ 80% coffee txn ที่ร้านเดิม</td><td class="sig-cell">Merchant concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="weekend_foodie" data-def="dining spend Sat-Sun > 60% ของ dining ทั้งหมด"><td class="tag-cell"><code>weekend_foodie</code></td><td>dining spend Sat-Sun > 60% ของ dining ทั้งหมด</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="japanese_food_lover" data-def="≥ 50% dining ที่ร้านญี่ปุ่น"><td class="tag-cell"><code>japanese_food_lover</code></td><td>≥ 50% dining ที่ร้านญี่ปุ่น</td><td class="sig-cell">cuisine = Japanese</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="korean_food_lover" data-def="≥ 50% dining ที่ร้านเกาหลี"><td class="tag-cell"><code>korean_food_lover</code></td><td>≥ 50% dining ที่ร้านเกาหลี</td><td class="sig-cell">cuisine = Korean</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="chinese_food_lover" data-def="≥ 50% dining ที่ร้านจีน"><td class="tag-cell"><code>chinese_food_lover</code></td><td>≥ 50% dining ที่ร้านจีน</td><td class="sig-cell">cuisine = Chinese</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="thai_food_loyalist" data-def="≥ 60% dining ที่ร้านไทย"><td class="tag-cell"><code>thai_food_loyalist</code></td><td>≥ 60% dining ที่ร้านไทย</td><td class="sig-cell">cuisine = Thai</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="western_food_lover" data-def="≥ 50% dining ที่ร้านตะวันตก"><td class="tag-cell"><code>western_food_lover</code></td><td>≥ 50% dining ที่ร้านตะวันตก</td><td class="sig-cell">cuisine = Western</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="italian_food_lover" data-def="≥ 50% dining ที่ร้านอิตาเลียน"><td class="tag-cell"><code>italian_food_lover</code></td><td>≥ 50% dining ที่ร้านอิตาเลียน</td><td class="sig-cell">cuisine = Italian</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="seafood_lover" data-def="ร้านอาหารทะเลบ่อย"><td class="tag-cell"><code>seafood_lover</code></td><td>ร้านอาหารทะเลบ่อย</td><td class="sig-cell">cuisine = Seafood</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="vegetarian_friendly" data-def="ร้าน vegetarian / plant-based"><td class="tag-cell"><code>vegetarian_friendly</code></td><td>ร้าน vegetarian / plant-based</td><td class="sig-cell">diet = Vegetarian</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="food_court_regular" data-def="food court ในห้างบ่อย"><td class="tag-cell"><code>food_court_regular</code></td><td>food court ในห้างบ่อย</td><td class="sig-cell">venue_type = Food Court</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="buffet_lover" data-def="บุฟเฟ่ต์ ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>buffet_lover</code></td><td>บุฟเฟ่ต์ ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Buffet</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="family_restaurant_goer" data-def="ร้าน family-friendly บ่อย"><td class="tag-cell"><code>family_restaurant_goer</code></td><td>ร้าน family-friendly บ่อย</td><td class="sig-cell">segment = Family</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="healthy_eater" data-def="ร้าน healthy food / salad"><td class="tag-cell"><code>healthy_eater</code></td><td>ร้าน healthy food / salad</td><td class="sig-cell">diet = Healthy</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="halal_restaurant_goer" data-def="ร้านอาหาร halal certified บ่อย"><td class="tag-cell"><code>halal_restaurant_goer</code></td><td>ร้านอาหาร halal certified บ่อย</td><td class="sig-cell">cuisine_tag = Halal</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="omakase_enthusiast" data-def="omakase / chef's table ≥ 2 ครั้ง/ปี + high ticket"><td class="tag-cell"><code>omakase_enthusiast</code></td><td>omakase / chef's table ≥ 2 ครั้ง/ปี + high ticket</td><td class="sig-cell">venue_type = Omakase</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="rooftop_bar_goer" data-def="rooftop bar / sky lounge บ่อย"><td class="tag-cell"><code>rooftop_bar_goer</code></td><td>rooftop bar / sky lounge บ่อย</td><td class="sig-cell">venue_type = Rooftop</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="m" data-tag="plant_based_explorer" data-def="สั่ง plant-based / vegan บ่อยขึ้น"><td class="tag-cell"><code>plant_based_explorer</code></td><td>สั่ง plant-based / vegan บ่อยขึ้น</td><td class="sig-cell">diet = Vegan + Recency</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="bbq_lover" data-def="ร้าน BBQ ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>bbq_lover</code></td><td>ร้าน BBQ ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">cuisine = BBQ</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="hot_pot_lover" data-def="hot pot ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>hot_pot_lover</code></td><td>hot pot ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">cuisine = Hot Pot</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="noodle_lover" data-def="ร้านก๋วยเตี๋ยว/noodle บ่อย ≥ 6 ครั้ง/เดือน"><td class="tag-cell"><code>noodle_lover</code></td><td>ร้านก๋วยเตี๋ยว/noodle บ่อย ≥ 6 ครั้ง/เดือน</td><td class="sig-cell">cuisine = Noodles</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="steak_lover" data-def="steakhouse ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>steak_lover</code></td><td>steakhouse ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">cuisine = Steak</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="french_food_lover" data-def="≥ 50% fine dining ที่ร้านฝรั่งเศส"><td class="tag-cell"><code>french_food_lover</code></td><td>≥ 50% fine dining ที่ร้านฝรั่งเศส</td><td class="sig-cell">cuisine = French</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="american_food_lover" data-def="burger/steak/American chain dominant"><td class="tag-cell"><code>american_food_lover</code></td><td>burger/steak/American chain dominant</td><td class="sig-cell">cuisine = American</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="vietnamese_food_lover" data-def="ร้านเวียดนามบ่อย ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>vietnamese_food_lover</code></td><td>ร้านเวียดนามบ่อย ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">cuisine = Vietnamese</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="thai_isan_lover" data-def="ร้านอาหารอีสาน/ส้มตำบ่อย"><td class="tag-cell"><code>thai_isan_lover</code></td><td>ร้านอาหารอีสาน/ส้มตำบ่อย</td><td class="sig-cell">cuisine = Thai_Isan</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="thai_northern_lover" data-def="ร้านอาหารเหนือบ่อย"><td class="tag-cell"><code>thai_northern_lover</code></td><td>ร้านอาหารเหนือบ่อย</td><td class="sig-cell">cuisine = Thai_Northern</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="thai_southern_lover" data-def="ร้านอาหารใต้บ่อย"><td class="tag-cell"><code>thai_southern_lover</code></td><td>ร้านอาหารใต้บ่อย</td><td class="sig-cell">cuisine = Thai_Southern</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="alcohol_buyer" data-def="bar/pub/liquor shop ≥ 3 ครั้ง/เดือน"><td class="tag-cell"><code>alcohol_buyer</code></td><td>bar/pub/liquor shop ≥ 3 ครั้ง/เดือน</td><td class="sig-cell">merchant_type = Bar/Alcohol</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="tea_house_regular" data-def="tea house (ไม่ใช่ bubble tea) ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>tea_house_regular</code></td><td>tea house (ไม่ใช่ bubble tea) ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Tea House</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="juice_bar_regular" data-def="juice bar / health drink shop ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>juice_bar_regular</code></td><td>juice bar / health drink shop ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Juice Bar</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="drinks_shop_regular" data-def="standalone drink shop (non-cafe) ≥ 6 ครั้ง/เดือน"><td class="tag-cell"><code>drinks_shop_regular</code></td><td>standalone drink shop (non-cafe) ≥ 6 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Drinks Shop</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="travel & hotel">
+  <div class="cat-header">
+    <span class="cat-emoji">✈️</span>
+    <span class="cat-name">Travel & Hotel</span>
+    <span class="cat-total">25 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">23 Existing</span><span class="cnt-pill cnt-ov">2 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="frequent_traveler" data-def="airline + hotel ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>frequent_traveler</code></td><td>airline + hotel ≥ 4 ครั้ง/ปี</td><td class="sig-cell">MCC: Airlines + Hotel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="international_traveler" data-def="foreign currency ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>international_traveler</code></td><td>foreign currency ≥ 2 ครั้ง/ปี</td><td class="sig-cell">Currency ≠ THB</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="domestic_traveler" data-def="airline/hotel ในประเทศ ไม่มี foreign"><td class="tag-cell"><code>domestic_traveler</code></td><td>airline/hotel ในประเทศ ไม่มี foreign</td><td class="sig-cell">MCC + Currency</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="budget_traveler" data-def="LCC airline + hotel avg ต่ำ"><td class="tag-cell"><code>budget_traveler</code></td><td>LCC airline + hotel avg ต่ำ</td><td class="sig-cell">Merchant: AirAsia + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="luxury_traveler" data-def="full-service airline + hotel > P75"><td class="tag-cell"><code>luxury_traveler</code></td><td>full-service airline + hotel > P75</td><td class="sig-cell">Merchant: TG, SQ + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="business_traveler" data-def="บินจันทร์-ศุกร์ + hotel weekday"><td class="tag-cell"><code>business_traveler</code></td><td>บินจันทร์-ศุกร์ + hotel weekday</td><td class="sig-cell">Timestamp + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="leisure_traveler" data-def="airline/hotel ช่วง weekend/วันหยุด"><td class="tag-cell"><code>leisure_traveler</code></td><td>airline/hotel ช่วง weekend/วันหยุด</td><td class="sig-cell">Timestamp + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="hotel_loyalist" data-def="≥ 70% hotel txn ที่ chain เดียว"><td class="tag-cell"><code>hotel_loyalist</code></td><td>≥ 70% hotel txn ที่ chain เดียว</td><td class="sig-cell">Merchant concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="airbnb_user" data-def="Airbnb ≥ 1 ครั้ง/ปี"><td class="tag-cell"><code>airbnb_user</code></td><td>Airbnb ≥ 1 ครั้ง/ปี</td><td class="sig-cell">Merchant: Airbnb</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="frequent_flyer" data-def="airline ≥ 6 ครั้ง/ปี"><td class="tag-cell"><code>frequent_flyer</code></td><td>airline ≥ 6 ครั้ง/ปี</td><td class="sig-cell">MCC: Airlines</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="backpacker_style" data-def="ท่องเที่ยวบ่อย + avg spend ต่ำ"><td class="tag-cell"><code>backpacker_style</code></td><td>ท่องเที่ยวบ่อย + avg spend ต่ำ</td><td class="sig-cell">Frequency + Low amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="last_minute_booker" data-def="booking < 7 วันก่อนเดินทาง"><td class="tag-cell"><code>last_minute_booker</code></td><td>booking < 7 วันก่อนเดินทาง</td><td class="sig-cell">Date pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="early_planner" data-def="booking > 30 วันล่วงหน้า"><td class="tag-cell"><code>early_planner</code></td><td>booking > 30 วันล่วงหน้า</td><td class="sig-cell">Date pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="staycation_lover" data-def="hotel txn ในประเทศ ไม่มี airline ร่วม"><td class="tag-cell"><code>staycation_lover</code></td><td>hotel txn ในประเทศ ไม่มี airline ร่วม</td><td class="sig-cell">Hotel + No airline</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="duty_free_shopper" data-def="duty free txn ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>duty_free_shopper</code></td><td>duty free txn ≥ 2 ครั้ง/ปี</td><td class="sig-cell">MCC: Duty Free</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="long_stay_traveler" data-def="hotel txn ≥ 5 คืนต่อ trip"><td class="tag-cell"><code>long_stay_traveler</code></td><td>hotel txn ≥ 5 คืนต่อ trip</td><td class="sig-cell">Amount + duration proxy</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="solo_traveler" data-def="airline + hotel single avg"><td class="tag-cell"><code>solo_traveler</code></td><td>airline + hotel single avg</td><td class="sig-cell">Amount proxy</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="asia_traveler" data-def="foreign txn ส่วนใหญ่ใน Asia"><td class="tag-cell"><code>asia_traveler</code></td><td>foreign txn ส่วนใหญ่ใน Asia</td><td class="sig-cell">merchant_country = Asia</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="europe_traveler" data-def="foreign txn ที่ Europe"><td class="tag-cell"><code>europe_traveler</code></td><td>foreign txn ที่ Europe</td><td class="sig-cell">merchant_country = Europe</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="resort_lover" data-def="hotel txn ที่ resort"><td class="tag-cell"><code>resort_lover</code></td><td>hotel txn ที่ resort</td><td class="sig-cell">hotel_type = Resort</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="city_traveler" data-def="hotel txn ที่ city hotel"><td class="tag-cell"><code>city_traveler</code></td><td>hotel txn ที่ city hotel</td><td class="sig-cell">hotel_type = City</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="japan_traveler" data-def="foreign txn ที่ Japan บ่อย"><td class="tag-cell"><code>japan_traveler</code></td><td>foreign txn ที่ Japan บ่อย</td><td class="sig-cell">merchant_country = Japan</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="luxury_resort_seeker" data-def="resort + avg > P90"><td class="tag-cell"><code>luxury_resort_seeker</code></td><td>resort + avg > P90</td><td class="sig-cell">hotel_type = Resort + Amount</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="cruise_passenger" data-def="cruise line txn ≥ 1 ครั้ง/ปี"><td class="tag-cell"><code>cruise_passenger</code></td><td>cruise line txn ≥ 1 ครั้ง/ปี</td><td class="sig-cell">merchant_type = Cruise</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="workcation_traveler" data-def="hotel weekday ≥ 5 คืน + non-business pattern"><td class="tag-cell"><code>workcation_traveler</code></td><td>hotel weekday ≥ 5 คืน + non-business pattern</td><td class="sig-cell">Duration + non-Mon pattern</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="shopping">
+  <div class="cat-header">
+    <span class="cat-emoji">🛍️</span>
+    <span class="cat-name">Shopping</span>
+    <span class="cat-total">34 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">20 Existing</span><span class="cnt-pill cnt-ov">12 Overlap</span><span class="cnt-pill cnt-new">2 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="online_first_shopper" data-def="≥ 50% txn เป็น online"><td class="tag-cell"><code>online_first_shopper</code></td><td>≥ 50% txn เป็น online</td><td class="sig-cell">Channel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="luxury_shopper" data-def="avg ticket > P90 หรือ luxury merchant"><td class="tag-cell"><code>luxury_shopper</code></td><td>avg ticket > P90 หรือ luxury merchant</td><td class="sig-cell">Merchant + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="fashion_lover" data-def="apparel ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>fashion_lover</code></td><td>apparel ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">MCC: Apparel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="sneaker_enthusiast" data-def="ร้านรองเท้า/sneaker บ่อย"><td class="tag-cell"><code>sneaker_enthusiast</code></td><td>ร้านรองเท้า/sneaker บ่อย</td><td class="sig-cell">Merchant: Nike, Adidas</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="beauty_conscious" data-def="ร้านเครื่องสำอาง ≥ 3 ครั้ง/เดือน"><td class="tag-cell"><code>beauty_conscious</code></td><td>ร้านเครื่องสำอาง ≥ 3 ครั้ง/เดือน</td><td class="sig-cell">MCC: Beauty</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="tech_gadget_buyer" data-def="electronics ≥ 2 ครั้ง/ไตรมาส"><td class="tag-cell"><code>tech_gadget_buyer</code></td><td>electronics ≥ 2 ครั้ง/ไตรมาส</td><td class="sig-cell">MCC: Electronics</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="home_decor_lover" data-def="furniture/home goods บ่อย"><td class="tag-cell"><code>home_decor_lover</code></td><td>furniture/home goods บ่อย</td><td class="sig-cell">Merchant: IKEA, HomePro</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="book_lover" data-def="bookstore ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>book_lover</code></td><td>bookstore ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Se-Ed, B2S</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="sports_gear_buyer" data-def="ร้านอุปกรณ์กีฬา ≥ 2 ครั้ง/ไตรมาส"><td class="tag-cell"><code>sports_gear_buyer</code></td><td>ร้านอุปกรณ์กีฬา ≥ 2 ครั้ง/ไตรมาส</td><td class="sig-cell">MCC: Sporting Goods</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="grocery_regular" data-def="supermarket ≥ 3 ครั้ง/เดือน"><td class="tag-cell"><code>grocery_regular</code></td><td>supermarket ≥ 3 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Tops, BigC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="convenience_store_addict" data-def="convenience store ≥ 15 ครั้ง/เดือน"><td class="tag-cell"><code>convenience_store_addict</code></td><td>convenience store ≥ 15 ครั้ง/เดือน</td><td class="sig-cell">Merchant: 7-Eleven</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="department_store_loyal" data-def="≥ 70% dept txn ที่ chain เดิม"><td class="tag-cell"><code>department_store_loyal</code></td><td>≥ 70% dept txn ที่ chain เดิม</td><td class="sig-cell">Merchant concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="marketplace_shopper" data-def="Shopee/Lazada ≥ 4 ครั้ง/เดือน"><td class="tag-cell"><code>marketplace_shopper</code></td><td>Shopee/Lazada ≥ 4 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Shopee, Lazada</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="subscription_stacker" data-def="recurring txn ≥ 3 บริการ/เดือน"><td class="tag-cell"><code>subscription_stacker</code></td><td>recurring txn ≥ 3 บริการ/เดือน</td><td class="sig-cell">Recurring pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="impulse_buyer" data-def="txn สูง หลาย merchant pattern ไม่ consistent"><td class="tag-cell"><code>impulse_buyer</code></td><td>txn สูง หลาย merchant pattern ไม่ consistent</td><td class="sig-cell">Diversity + Variance</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="brand_switcher" data-def="merchant loyalty ต่ำ ชอบลองใหม่"><td class="tag-cell"><code>brand_switcher</code></td><td>merchant loyalty ต่ำ ชอบลองใหม่</td><td class="sig-cell">Low concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="secondhand_buyer" data-def="platform secondhand"><td class="tag-cell"><code>secondhand_buyer</code></td><td>platform secondhand</td><td class="sig-cell">Merchant: Carousell</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="seasonal_shopper" data-def="spike ช่วง 11.11, 12.12, Songkran"><td class="tag-cell"><code>seasonal_shopper</code></td><td>spike ช่วง 11.11, 12.12, Songkran</td><td class="sig-cell">Timestamp + Amount spike</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="premium_brand_loyal" data-def="repeat premium brand > 3 ครั้ง/ไตรมาส"><td class="tag-cell"><code>premium_brand_loyal</code></td><td>repeat premium brand > 3 ครั้ง/ไตรมาส</td><td class="sig-cell">Merchant + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="hypermarket_shopper" data-def="Makro/Lotus's ≥ 2 ครั้ง/เดือน + large basket"><td class="tag-cell"><code>hypermarket_shopper</code></td><td>Makro/Lotus's ≥ 2 ครั้ง/เดือน + large basket</td><td class="sig-cell">Merchant + High amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="jewelry_buyer" data-def="jewelry store txn ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>jewelry_buyer</code></td><td>jewelry store txn ≥ 2 ครั้ง/ปี</td><td class="sig-cell">MCC: Jewelry</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="gold_accumulator" data-def="gold shop txn recurring + consistent amount"><td class="tag-cell"><code>gold_accumulator</code></td><td>gold shop txn recurring + consistent amount</td><td class="sig-cell">Merchant: YLG, Aurora</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="stationery_regular" data-def="stationery store ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>stationery_regular</code></td><td>stationery store ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">MCC: Stationery</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="home_office_buyer" data-def="stationery + electronics combo ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>home_office_buyer</code></td><td>stationery + electronics combo ≥ 4 ครั้ง/ปี</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="fast_fashion_buyer" data-def="fashion MCC + low avg ticket + high frequency"><td class="tag-cell"><code>fast_fashion_buyer</code></td><td>fashion MCC + low avg ticket + high frequency</td><td class="sig-cell">MCC + Amount + Frequency</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="accessories_collector" data-def="jewelry + fashion accessory บ่อย"><td class="tag-cell"><code>accessories_collector</code></td><td>jewelry + fashion accessory บ่อย</td><td class="sig-cell">MCC: Jewelry + Apparel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="flash_sale_hunter" data-def="e-commerce spike ช่วง 11.11, 12.12 > 3x avg"><td class="tag-cell"><code>flash_sale_hunter</code></td><td>e-commerce spike ช่วง 11.11, 12.12 > 3x avg</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="cross_border_shopper" data-def="foreign e-commerce ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>cross_border_shopper</code></td><td>foreign e-commerce ≥ 4 ครั้ง/ปี</td><td class="sig-cell">Merchant: Amazon, ASOS</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="mall_shopper" data-def="≥ 60% retail txn ที่ merchant ในห้าง"><td class="tag-cell"><code>mall_shopper</code></td><td>≥ 60% retail txn ที่ merchant ในห้าง</td><td class="sig-cell">merchant_location = Mall</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="bargain_hunter" data-def="outlet/discount store บ่อย"><td class="tag-cell"><code>bargain_hunter</code></td><td>outlet/discount store บ่อย</td><td class="sig-cell">venue_type = Outlet</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="gifting_regular" data-def="gift shop ช่วงเทศกาลสม่ำเสมอ"><td class="tag-cell"><code>gifting_regular</code></td><td>gift shop ช่วงเทศกาลสม่ำเสมอ</td><td class="sig-cell">merchant_type = Gift</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="luxury_gifter" data-def="jewelry + dept store spike ช่วง Valentine/Mother's Day"><td class="tag-cell"><code>luxury_gifter</code></td><td>jewelry + dept store spike ช่วง Valentine/Mother's Day</td><td class="sig-cell">MCC combo + Timestamp</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="eco_conscious_shopper" data-def="sustainable/organic/eco brand บ่อย"><td class="tag-cell"><code>eco_conscious_shopper</code></td><td>sustainable/organic/eco brand บ่อย</td><td class="sig-cell">merchant_type = Eco/Sustainable</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="v" data-tag="travel_bag_enthusiast" data-def="luggage/travel bag ≥ 2 ครั้ง/ปี + travel combo"><td class="tag-cell"><code>travel_bag_enthusiast</code></td><td>luggage/travel bag ≥ 2 ครั้ง/ปี + travel combo</td><td class="sig-cell">MCC: Luggage + Travel</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="entertainment & lifestyle">
+  <div class="cat-header">
+    <span class="cat-emoji">🎭</span>
+    <span class="cat-name">Entertainment & Lifestyle</span>
+    <span class="cat-total">28 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">14 Existing</span><span class="cnt-pill cnt-ov">11 Overlap</span><span class="cnt-pill cnt-new">3 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="movie_lover" data-def="cinema ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>movie_lover</code></td><td>cinema ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">Merchant: SF, Major</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="concert_goer" data-def="ticketing ≥ 3 ครั้ง/ปี"><td class="tag-cell"><code>concert_goer</code></td><td>ticketing ≥ 3 ครั้ง/ปี</td><td class="sig-cell">Merchant: Eventpop</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="gym_member" data-def="fitness center recurring ≥ 6 เดือน"><td class="tag-cell"><code>gym_member</code></td><td>fitness center recurring ≥ 6 เดือน</td><td class="sig-cell">Merchant: Fitness First</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="gamer" data-def="gaming platform บ่อย"><td class="tag-cell"><code>gamer</code></td><td>gaming platform บ่อย</td><td class="sig-cell">Merchant: Steam, PS Store</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="night_owl_entertainer" data-def="entertainment หลัง 22:00 บ่อย"><td class="tag-cell"><code>night_owl_entertainer</code></td><td>entertainment หลัง 22:00 บ่อย</td><td class="sig-cell">MCC + Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="karaoke_regular" data-def="karaoke ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>karaoke_regular</code></td><td>karaoke ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Tawandang</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="spa_lover" data-def="spa/massage ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>spa_lover</code></td><td>spa/massage ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">MCC: Personal Care</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="music_festival_goer" data-def="festival ticketing ≥ 2 ครั้ง/ปี + high amount"><td class="tag-cell"><code>music_festival_goer</code></td><td>festival ticketing ≥ 2 ครั้ง/ปี + high amount</td><td class="sig-cell">Ticketing + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="streaming_subscriber" data-def="≥ 2 streaming subscriptions"><td class="tag-cell"><code>streaming_subscriber</code></td><td>≥ 2 streaming subscriptions</td><td class="sig-cell">Merchant: Netflix, Disney+</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="outdoor_adventurer" data-def="outdoor gear + travel combo"><td class="tag-cell"><code>outdoor_adventurer</code></td><td>outdoor gear + travel combo</td><td class="sig-cell">Merchant: Decathlon + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="theme_park_visitor" data-def="theme park ≥ 1 ครั้ง/ปี"><td class="tag-cell"><code>theme_park_visitor</code></td><td>theme park ≥ 1 ครั้ง/ปี</td><td class="sig-cell">Merchant: Universal</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="nail_salon_regular" data-def="nail salon ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>nail_salon_regular</code></td><td>nail salon ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">MCC: Beauty + Merchant</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="hair_salon_loyal" data-def="≥ 70% hair txn ที่ร้านเดิม + monthly"><td class="tag-cell"><code>hair_salon_loyal</code></td><td>≥ 70% hair txn ที่ร้านเดิม + monthly</td><td class="sig-cell">Merchant concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="sport_event_goer" data-def="stadium/sport event ≥ 3 ครั้ง/ปี"><td class="tag-cell"><code>sport_event_goer</code></td><td>stadium/sport event ≥ 3 ครั้ง/ปี</td><td class="sig-cell">MCC: Ticket + Stadium</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="esports_fan" data-def="esports event ticketing + gaming spend combo"><td class="tag-cell"><code>esports_fan</code></td><td>esports event ticketing + gaming spend combo</td><td class="sig-cell">Merchant: RoV, PUBG event</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="pet_friendly_lifestyle" data-def="pet + travel + dining combo"><td class="tag-cell"><code>pet_friendly_lifestyle</code></td><td>pet + travel + dining combo</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="sports_fan" data-def="stadium/sport event ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>sports_fan</code></td><td>stadium/sport event ≥ 2 ครั้ง/ปี</td><td class="sig-cell">venue_type = Stadium</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="yoga_practitioner" data-def="yoga studio ≥ 2 ครั้ง/เดือน"><td class="tag-cell"><code>yoga_practitioner</code></td><td>yoga studio ≥ 2 ครั้ง/เดือน</td><td class="sig-cell">activity_type = Yoga</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="golf_player" data-def="golf course ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>golf_player</code></td><td>golf course ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">activity_type = Golf</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="art_culture_enthusiast" data-def="museum/gallery/art event"><td class="tag-cell"><code>art_culture_enthusiast</code></td><td>museum/gallery/art event</td><td class="sig-cell">venue_type = Cultural</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="escape_room_fan" data-def="escape room ≥ 2 ครั้ง/ไตรมาส"><td class="tag-cell"><code>escape_room_fan</code></td><td>escape room ≥ 2 ครั้ง/ไตรมาส</td><td class="sig-cell">venue_type = Escape Room</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="board_game_cafe_goer" data-def="board game cafe บ่อย"><td class="tag-cell"><code>board_game_cafe_goer</code></td><td>board game cafe บ่อย</td><td class="sig-cell">venue_type = Board Game</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="bowling_regular" data-def="bowling ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>bowling_regular</code></td><td>bowling ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Bowling</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="pilates_devotee" data-def="pilates studio ≥ 3 ครั้ง/เดือน"><td class="tag-cell"><code>pilates_devotee</code></td><td>pilates studio ≥ 3 ครั้ง/เดือน</td><td class="sig-cell">activity_type = Pilates</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="muay_thai_trainee" data-def="muay thai gym txn recurring"><td class="tag-cell"><code>muay_thai_trainee</code></td><td>muay thai gym txn recurring</td><td class="sig-cell">activity_type = Muay Thai</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="brow_treatment_regular" data-def="brow specialist ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>brow_treatment_regular</code></td><td>brow specialist ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Brow Studio</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="lash_extension_regular" data-def="lash studio ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>lash_extension_regular</code></td><td>lash studio ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Lash Studio</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="s" data-tag="waxing_regular" data-def="wax studio ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>waxing_regular</code></td><td>wax studio ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">venue_type = Wax Studio</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="transport & commute">
+  <div class="cat-header">
+    <span class="cat-emoji">🚗</span>
+    <span class="cat-name">Transport & Commute</span>
+    <span class="cat-total">16 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">15 Existing</span><span class="cnt-pill cnt-ov">1 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="daily_commuter" data-def="fuel/transit weekday ≥ 20 วัน/เดือน"><td class="tag-cell"><code>daily_commuter</code></td><td>fuel/transit weekday ≥ 20 วัน/เดือน</td><td class="sig-cell">MCC + Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="car_owner" data-def="fuel + parking + auto service ครบ"><td class="tag-cell"><code>car_owner</code></td><td>fuel + parking + auto service ครบ</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="grab_dependent" data-def="Grab ≥ 15 ครั้ง/เดือน"><td class="tag-cell"><code>grab_dependent</code></td><td>Grab ≥ 15 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Grab</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="taxi_user" data-def="taxi บ่อย + Grab น้อย"><td class="tag-cell"><code>taxi_user</code></td><td>taxi บ่อย + Grab น้อย</td><td class="sig-cell">MCC: Taxi</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="fuel_brand_loyal" data-def="≥ 70% fuel ที่ปั๊มแบรนด์เดียว"><td class="tag-cell"><code>fuel_brand_loyal</code></td><td>≥ 70% fuel ที่ปั๊มแบรนด์เดียว</td><td class="sig-cell">Merchant concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="ev_driver" data-def="EV charging station"><td class="tag-cell"><code>ev_driver</code></td><td>EV charging station</td><td class="sig-cell">Merchant: EA Anywhere</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="bts_mrt_user" data-def="BTS/MRT บ่อย"><td class="tag-cell"><code>bts_mrt_user</code></td><td>BTS/MRT บ่อย</td><td class="sig-cell">Merchant: Rabbit, MRT</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="motorbike_user" data-def="fuel < 200 บาท/ครั้ง สม่ำเสมอ"><td class="tag-cell"><code>motorbike_user</code></td><td>fuel < 200 บาท/ครั้ง สม่ำเสมอ</td><td class="sig-cell">Amount pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="parking_heavy" data-def="parking > 15 ครั้ง/เดือน"><td class="tag-cell"><code>parking_heavy</code></td><td>parking > 15 ครั้ง/เดือน</td><td class="sig-cell">MCC: Parking</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="long_distance_driver" data-def="toll บ่อย / fuel ต่างจังหวัด"><td class="tag-cell"><code>long_distance_driver</code></td><td>toll บ่อย / fuel ต่างจังหวัด</td><td class="sig-cell">MCC: Toll</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="car_enthusiast" data-def="auto accessories + car wash + detailing บ่อย"><td class="tag-cell"><code>car_enthusiast</code></td><td>auto accessories + car wash + detailing บ่อย</td><td class="sig-cell">MCC: Auto Accessories</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="car_maintenance_regular" data-def="service center + tire + oil ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>car_maintenance_regular</code></td><td>service center + tire + oil ≥ 4 ครั้ง/ปี</td><td class="sig-cell">MCC: Auto Service</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="high_fuel_spender" data-def="fuel spend > P75 ของ portfolio"><td class="tag-cell"><code>high_fuel_spender</code></td><td>fuel spend > P75 ของ portfolio</td><td class="sig-cell">MCC: Petrol + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="ride_share_switcher" data-def="สลับ Grab / Bolt / InDriver บ่อย"><td class="tag-cell"><code>ride_share_switcher</code></td><td>สลับ Grab / Bolt / InDriver บ่อย</td><td class="sig-cell">Merchant diversity</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="van_pool_user" data-def="minibus/van service txn บ่อย ช่วง commute"><td class="tag-cell"><code>van_pool_user</code></td><td>minibus/van service txn บ่อย ช่วง commute</td><td class="sig-cell">MCC: Transportation + Time</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="new_car_seeker" data-def="auto showroom txn ≥ 1 ครั้ง"><td class="tag-cell"><code>new_car_seeker</code></td><td>auto showroom txn ≥ 1 ครั้ง</td><td class="sig-cell">MCC: Automobile + High amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="health & wellness">
+  <div class="cat-header">
+    <span class="cat-emoji">💊</span>
+    <span class="cat-name">Health & Wellness</span>
+    <span class="cat-total">20 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">16 Existing</span><span class="cnt-pill cnt-ov">4 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="health_conscious" data-def="gym + pharmacy + health food ≥ 2 จาก 3"><td class="tag-cell"><code>health_conscious</code></td><td>gym + pharmacy + health food ≥ 2 จาก 3</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="pharmacy_regular" data-def="pharmacy ≥ 3 ครั้ง/เดือน"><td class="tag-cell"><code>pharmacy_regular</code></td><td>pharmacy ≥ 3 ครั้ง/เดือน</td><td class="sig-cell">MCC: Drug Store</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="hospital_visitor" data-def="hospital ≥ 2 ครั้ง/ไตรมาส"><td class="tag-cell"><code>hospital_visitor</code></td><td>hospital ≥ 2 ครั้ง/ไตรมาส</td><td class="sig-cell">MCC: Hospital</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="supplement_buyer" data-def="Watsons/Boots บ่อย"><td class="tag-cell"><code>supplement_buyer</code></td><td>Watsons/Boots บ่อย</td><td class="sig-cell">Merchant: Watsons</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="organic_food_lover" data-def="organic/health food store"><td class="tag-cell"><code>organic_food_lover</code></td><td>organic/health food store</td><td class="sig-cell">Merchant: Lemon Farm</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="dental_care_conscious" data-def="dental clinic ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>dental_care_conscious</code></td><td>dental clinic ≥ 2 ครั้ง/ปี</td><td class="sig-cell">MCC: Dental</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="fitness_first_user" data-def="Fitness First recurring"><td class="tag-cell"><code>fitness_first_user</code></td><td>Fitness First recurring</td><td class="sig-cell">Merchant: Fitness First</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="eye_care_regular" data-def="optician ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>eye_care_regular</code></td><td>optician ≥ 2 ครั้ง/ปี</td><td class="sig-cell">MCC: Optical</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="m" data-tag="maternal_care" data-def="OB/GYN + baby products ช่วงเวลาเดียวกัน"><td class="tag-cell"><code>maternal_care</code></td><td>OB/GYN + baby products ช่วงเวลาเดียวกัน</td><td class="sig-cell">MCC combo + Timing</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="regular_checkup_goer" data-def="hospital/clinic txn recurring ≥ 1 ครั้ง/ไตรมาส"><td class="tag-cell"><code>regular_checkup_goer</code></td><td>hospital/clinic txn recurring ≥ 1 ครั้ง/ไตรมาส</td><td class="sig-cell">MCC: Hospital + Recurring</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="mental_wellness_seeker" data-def="meditation app + wellness center + spa combo"><td class="tag-cell"><code>mental_wellness_seeker</code></td><td>meditation app + wellness center + spa combo</td><td class="sig-cell">Merchant: Headspace + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="sports_nutrition_buyer" data-def="protein supplement + sports gear combo"><td class="tag-cell"><code>sports_nutrition_buyer</code></td><td>protein supplement + sports gear combo</td><td class="sig-cell">Merchant: Supersports + Nutrition</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="aesthetic_spender" data-def="beauty clinic + cosmetics high spend"><td class="tag-cell"><code>aesthetic_spender</code></td><td>beauty clinic + cosmetics high spend</td><td class="sig-cell">MCC: Beauty + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="high_medical_spender" data-def="hospital/clinic spend > P75"><td class="tag-cell"><code>high_medical_spender</code></td><td>hospital/clinic spend > P75</td><td class="sig-cell">MCC: Hospital + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="weight_management_focused" data-def="gym + low dining spend + supplement combo"><td class="tag-cell"><code>weight_management_focused</code></td><td>gym + low dining spend + supplement combo</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="beauty_clinic_visitor" data-def="aesthetic clinic บ่อย"><td class="tag-cell"><code>beauty_clinic_visitor</code></td><td>aesthetic clinic บ่อย</td><td class="sig-cell">clinic_type = Aesthetic</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="mental_health_aware" data-def="therapy/wellness center"><td class="tag-cell"><code>mental_health_aware</code></td><td>therapy/wellness center</td><td class="sig-cell">clinic_type = Mental Health</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="traditional_medicine" data-def="ยาแผนโบราณ / แพทย์แผนจีน"><td class="tag-cell"><code>traditional_medicine</code></td><td>ยาแผนโบราณ / แพทย์แผนจีน</td><td class="sig-cell">clinic_type = TCM</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="specialized_treatment_seeker" data-def="specialist clinic ≥ 4 ครั้ง/ปี (non-GP)"><td class="tag-cell"><code>specialized_treatment_seeker</code></td><td>specialist clinic ≥ 4 ครั้ง/ปี (non-GP)</td><td class="sig-cell">clinic_type = Specialist</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="v" data-tag="fertility_aware" data-def="fertility clinic / OB txn + baby product combo"><td class="tag-cell"><code>fertility_aware</code></td><td>fertility clinic / OB txn + baby product combo</td><td class="sig-cell">clinic_type = Fertility</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="financial behavior">
+  <div class="cat-header">
+    <span class="cat-emoji">💳</span>
+    <span class="cat-name">Financial Behavior</span>
+    <span class="cat-total">25 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">23 Existing</span><span class="cnt-pill cnt-ov">1 Overlap</span><span class="cnt-pill cnt-new">1 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="high_spender" data-def="total spend > P75"><td class="tag-cell"><code>high_spender</code></td><td>total spend > P75</td><td class="sig-cell">Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="mid_spender" data-def="total spend P25–P75"><td class="tag-cell"><code>mid_spender</code></td><td>total spend P25–P75</td><td class="sig-cell">Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="low_spender" data-def="total spend < P25"><td class="tag-cell"><code>low_spender</code></td><td>total spend < P25</td><td class="sig-cell">Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="consistent_spender" data-def="CV monthly spend ต่ำ"><td class="tag-cell"><code>consistent_spender</code></td><td>CV monthly spend ต่ำ</td><td class="sig-cell">Variance</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="seasonal_spender" data-def="spike > 2x avg ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>seasonal_spender</code></td><td>spike > 2x avg ≥ 2 ครั้ง/ปี</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="end_of_month_spender" data-def="≥ 40% spend วันที่ 25–31"><td class="tag-cell"><code>end_of_month_spender</code></td><td>≥ 40% spend วันที่ 25–31</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="paycheck_spender" data-def="spike ต้นเดือน (1–5)"><td class="tag-cell"><code>paycheck_spender</code></td><td>spike ต้นเดือน (1–5)</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="installment_user" data-def="installment ≥ 1 ครั้ง/ไตรมาส"><td class="tag-cell"><code>installment_user</code></td><td>installment ≥ 1 ครั้ง/ไตรมาส</td><td class="sig-cell">Installment flag</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="high_utilization" data-def="credit utilization > 70% สม่ำเสมอ"><td class="tag-cell"><code>high_utilization</code></td><td>credit utilization > 70% สม่ำเสมอ</td><td class="sig-cell">Utilization</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="low_utilization" data-def="credit utilization < 20%"><td class="tag-cell"><code>low_utilization</code></td><td>credit utilization < 20%</td><td class="sig-cell">Utilization</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="multi_card_user" data-def="spend pattern บ่งชี้หลายบัตร"><td class="tag-cell"><code>multi_card_user</code></td><td>spend pattern บ่งชี้หลายบัตร</td><td class="sig-cell">Spend pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="cash_advance_user" data-def="cash advance ≥ 1 ครั้ง/ปี"><td class="tag-cell"><code>cash_advance_user</code></td><td>cash advance ≥ 1 ครั้ง/ปี</td><td class="sig-cell">Txn type</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="reward_maximizer" data-def="≥ 50% spend ที่ high-points merchant"><td class="tag-cell"><code>reward_maximizer</code></td><td>≥ 50% spend ที่ high-points merchant</td><td class="sig-cell">Merchant + Reward</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="single_category_user" data-def="≥ 80% spend ใน MCC เดียว"><td class="tag-cell"><code>single_category_user</code></td><td>≥ 80% spend ใน MCC เดียว</td><td class="sig-cell">MCC concentration</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="investor" data-def="investment platform / บล. txn ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>investor</code></td><td>investment platform / บล. txn ≥ 4 ครั้ง/ปี</td><td class="sig-cell">MCC: Investment</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="regular_investor" data-def="investment txn recurring รายเดือน"><td class="tag-cell"><code>regular_investor</code></td><td>investment txn recurring รายเดือน</td><td class="sig-cell">MCC: Investment + Recurring</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="insurance_holder" data-def="insurance premium txn recurring"><td class="tag-cell"><code>insurance_holder</code></td><td>insurance premium txn recurring</td><td class="sig-cell">MCC: Insurance</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="multi_insurance_holder" data-def="≥ 2 insurance products recurring"><td class="tag-cell"><code>multi_insurance_holder</code></td><td>≥ 2 insurance products recurring</td><td class="sig-cell">MCC: Insurance + Diverse</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="high_installment_user" data-def="installment txn ≥ 3 active พร้อมกัน"><td class="tag-cell"><code>high_installment_user</code></td><td>installment txn ≥ 3 active พร้อมกัน</td><td class="sig-cell">Installment count</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="financially_disciplined" data-def="low utilization + no cash advance + consistent"><td class="tag-cell"><code>financially_disciplined</code></td><td>low utilization + no cash advance + consistent</td><td class="sig-cell">Combined behavioral</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="m" data-tag="cash_flow_stressed" data-def="high utilization + cash advance + end-of-month heavy"><td class="tag-cell"><code>cash_flow_stressed</code></td><td>high utilization + cash advance + end-of-month heavy</td><td class="sig-cell">Combined behavioral</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="wealth_builder" data-def="investor + insurance + low impulse combo"><td class="tag-cell"><code>wealth_builder</code></td><td>investor + insurance + low impulse combo</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="big_ticket_buyer" data-def="single txn > P95 ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>big_ticket_buyer</code></td><td>single txn > P95 ≥ 2 ครั้ง/ปี</td><td class="sig-cell">Amount spike</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="small_business_spender" data-def="telecom + ads + supplies + irregular high amount"><td class="tag-cell"><code>small_business_spender</code></td><td>telecom + ads + supplies + irregular high amount</td><td class="sig-cell">MCC combo pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="v" data-tag="donation_giver" data-def="donation/charity txn ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>donation_giver</code></td><td>donation/charity txn ≥ 2 ครั้ง/ปี</td><td class="sig-cell">MCC: Donation/Charity</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="‍👩‍👧 life stage">
+  <div class="cat-header">
+    <span class="cat-emoji">👨</span>
+    <span class="cat-name">‍👩‍👧 Life Stage</span>
+    <span class="cat-total">22 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">17 Existing</span><span class="cnt-pill cnt-ov">4 Overlap</span><span class="cnt-pill cnt-new">1 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="parent" data-def="baby/kids + family restaurant บ่อย"><td class="tag-cell"><code>parent</code></td><td>baby/kids + family restaurant บ่อย</td><td class="sig-cell">Merchant + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="m" data-tag="new_parent" data-def="spike baby products ใน 12 เดือน"><td class="tag-cell"><code>new_parent</code></td><td>spike baby products ใน 12 เดือน</td><td class="sig-cell">Merchant + Recency</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="pet_owner" data-def="pet shop/vet ≥ 1 ครั้ง/เดือน"><td class="tag-cell"><code>pet_owner</code></td><td>pet shop/vet ≥ 1 ครั้ง/เดือน</td><td class="sig-cell">Merchant: Pet Planet</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="homeowner" data-def="home improvement + utility ≥ 1 ครั้ง/ไตรมาส"><td class="tag-cell"><code>homeowner</code></td><td>home improvement + utility ≥ 1 ครั้ง/ไตรมาส</td><td class="sig-cell">Merchant: HomePro</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="senior_lifestyle" data-def="pharmacy + hospital + market dominant"><td class="tag-cell"><code>senior_lifestyle</code></td><td>pharmacy + hospital + market dominant</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="m" data-tag="empty_nester" data-def="kids merchant ลดลง + travel/leisure เพิ่ม"><td class="tag-cell"><code>empty_nester</code></td><td>kids merchant ลดลง + travel/leisure เพิ่ม</td><td class="sig-cell">Trend</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="teen_spender" data-def="gaming + fastfood + convenience dominant"><td class="tag-cell"><code>teen_spender</code></td><td>gaming + fastfood + convenience dominant</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="career_starter" data-def="low spend + professional attire"><td class="tag-cell"><code>career_starter</code></td><td>low spend + professional attire</td><td class="sig-cell">Amount + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="family_breadwinner" data-def="high spend + diverse category"><td class="tag-cell"><code>family_breadwinner</code></td><td>high spend + diverse category</td><td class="sig-cell">Amount + Diversity</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="retiree_lifestyle" data-def="weekday ≈ weekend ratio + pharmacy heavy"><td class="tag-cell"><code>retiree_lifestyle</code></td><td>weekday ≈ weekend ratio + pharmacy heavy</td><td class="sig-cell">Timestamp + MCC</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="multi_pet_owner" data-def="pet txn diverse (vet + grooming + food + toys)"><td class="tag-cell"><code>multi_pet_owner</code></td><td>pet txn diverse (vet + grooming + food + toys)</td><td class="sig-cell">MCC + Merchant diversity</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="home_renovator" data-def="high spend HomePro/contractor ≥ 3 ครั้ง/ปี"><td class="tag-cell"><code>home_renovator</code></td><td>high spend HomePro/contractor ≥ 3 ครั้ง/ปี</td><td class="sig-cell">Merchant: HomePro + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="school_fee_payer" data-def="school/tuition txn recurring รายเทอม"><td class="tag-cell"><code>school_fee_payer</code></td><td>school/tuition txn recurring รายเทอม</td><td class="sig-cell">MCC: Education + Recurring</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="extracurricular_parent" data-def="music school + art class + sports academy txn"><td class="tag-cell"><code>extracurricular_parent</code></td><td>music school + art class + sports academy txn</td><td class="sig-cell">MCC: Education + Kids</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="sandwich_generation" data-def="ทั้ง kids txn และ senior care txn พร้อมกัน"><td class="tag-cell"><code>sandwich_generation</code></td><td>ทั้ง kids txn และ senior care txn พร้อมกัน</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="m" data-tag="newly_married" data-def="jewelry + wedding vendor + honeymoon travel combo"><td class="tag-cell"><code>newly_married</code></td><td>jewelry + wedding vendor + honeymoon travel combo</td><td class="sig-cell">MCC combo + Timeline</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="student" data-def="ใกล้มหาวิทยาลัย + stationery + low spend"><td class="tag-cell"><code>student</code></td><td>ใกล้มหาวิทยาลัย + stationery + low spend</td><td class="sig-cell">merchant_location = Uni</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="b" data-stab="s" data-tag="young_professional" data-def="coffee weekday เช้า + lunch ใกล้ office"><td class="tag-cell"><code>young_professional</code></td><td>coffee weekday เช้า + lunch ใกล้ office</td><td class="sig-cell">merchant_location = Office</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="college_age" data-def="ใกล้มหาวิทยาลัย + delivery + low ticket"><td class="tag-cell"><code>college_age</code></td><td>ใกล้มหาวิทยาลัย + delivery + low ticket</td><td class="sig-cell">merchant_location = Uni</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="digital_nomad" data-def="co-working space + coffee + travel combo"><td class="tag-cell"><code>digital_nomad</code></td><td>co-working space + coffee + travel combo</td><td class="sig-cell">venue_type = Co-working</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="b" data-stab="s" data-tag="expat_lifestyle" data-def="foreign cuisine + international market + foreign transfer"><td class="tag-cell"><code>expat_lifestyle</code></td><td>foreign cuisine + international market + foreign transfer</td><td class="sig-cell">merchant_type = International</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="b" data-stab="v" data-tag="tattoo_enthusiast" data-def="tattoo studio txn ≥ 1 ครั้ง/ปี"><td class="tag-cell"><code>tattoo_enthusiast</code></td><td>tattoo studio txn ≥ 1 ครั้ง/ปี</td><td class="sig-cell">venue_type = Tattoo Studio</td><td><span class="path path-b">Path B</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="⏰ time patterns">
+  <div class="cat-header">
+    <span class="cat-emoji"></span>
+    <span class="cat-name">⏰ Time Patterns</span>
+    <span class="cat-total">15 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">15 Existing</span><span class="cnt-pill cnt-ov">0 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="morning_person" data-def="≥ 40% txn ก่อน 09:00"><td class="tag-cell"><code>morning_person</code></td><td>≥ 40% txn ก่อน 09:00</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="night_owl_spender" data-def="≥ 30% txn หลัง 22:00"><td class="tag-cell"><code>night_owl_spender</code></td><td>≥ 30% txn หลัง 22:00</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="weekend_warrior" data-def="≥ 60% spend Sat-Sun"><td class="tag-cell"><code>weekend_warrior</code></td><td>≥ 60% spend Sat-Sun</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="weekday_spender" data-def="≥ 70% spend Mon-Fri"><td class="tag-cell"><code>weekday_spender</code></td><td>≥ 70% spend Mon-Fri</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="lunch_hour_regular" data-def="spike 12:00–14:00 ทุก weekday"><td class="tag-cell"><code>lunch_hour_regular</code></td><td>spike 12:00–14:00 ทุก weekday</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="after_work_spender" data-def="spike 18:00–21:00"><td class="tag-cell"><code>after_work_spender</code></td><td>spike 18:00–21:00</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="holiday_spender" data-def="spend +50% ช่วงวันหยุดยาว"><td class="tag-cell"><code>holiday_spender</code></td><td>spend +50% ช่วงวันหยุดยาว</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="payday_spike" data-def="spike วันที่ 25–5 ต้นเดือน"><td class="tag-cell"><code>payday_spike</code></td><td>spike วันที่ 25–5 ต้นเดือน</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="monthly_planner" data-def="spend กระจาย consistent ไม่มี spike"><td class="tag-cell"><code>monthly_planner</code></td><td>spend กระจาย consistent ไม่มี spike</td><td class="sig-cell">Variance</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="off_peak_shopper" data-def="retail 09:00–12:00 วันธรรมดา"><td class="tag-cell"><code>off_peak_shopper</code></td><td>retail 09:00–12:00 วันธรรมดา</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="songkran_spender" data-def="spend spike ช่วง Songkran (เม.ย.) ทุกปี"><td class="tag-cell"><code>songkran_spender</code></td><td>spend spike ช่วง Songkran (เม.ย.) ทุกปี</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="year_end_big_spender" data-def="spend spike ธ.ค. > 2x avg ทุกปี"><td class="tag-cell"><code>year_end_big_spender</code></td><td>spend spike ธ.ค. > 2x avg ทุกปี</td><td class="sig-cell">Timestamp + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="ramadan_aware_spender" data-def="dining pattern เปลี่ยนช่วง Ramadan"><td class="tag-cell"><code>ramadan_aware_spender</code></td><td>dining pattern เปลี่ยนช่วง Ramadan</td><td class="sig-cell">Timestamp + Dining</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="event_day_spender" data-def="spend spike ตรงกับ major event"><td class="tag-cell"><code>event_day_spender</code></td><td>spend spike ตรงกับ major event</td><td class="sig-cell">Timestamp + Amount spike</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="early_bird_shopper" data-def="≥ 40% retail txn ก่อน 10:00"><td class="tag-cell"><code>early_bird_shopper</code></td><td>≥ 40% retail txn ก่อน 10:00</td><td class="sig-cell">Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="digital behavior">
+  <div class="cat-header">
+    <span class="cat-emoji">📱</span>
+    <span class="cat-name">Digital Behavior</span>
+    <span class="cat-total">15 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">15 Existing</span><span class="cnt-pill cnt-ov">0 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="online_native" data-def="≥ 70% txn เป็น online"><td class="tag-cell"><code>online_native</code></td><td>≥ 70% txn เป็น online</td><td class="sig-cell">Channel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="contactless_payer" data-def="≥ 80% in-store เป็น tap/NFC"><td class="tag-cell"><code>contactless_payer</code></td><td>≥ 80% in-store เป็น tap/NFC</td><td class="sig-cell">Payment method</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="app_heavy_user" data-def="≥ 50% txn ผ่าน mobile app"><td class="tag-cell"><code>app_heavy_user</code></td><td>≥ 50% txn ผ่าน mobile app</td><td class="sig-cell">Channel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="digital_subscription_heavy" data-def="≥ 4 recurring digital/เดือน"><td class="tag-cell"><code>digital_subscription_heavy</code></td><td>≥ 4 recurring digital/เดือน</td><td class="sig-cell">Recurring + Digital</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="streaming_only" data-def="streaming ≥ 2 + cinema = 0"><td class="tag-cell"><code>streaming_only</code></td><td>streaming ≥ 2 + cinema = 0</td><td class="sig-cell">Merchant pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="social_commerce_buyer" data-def="TikTok Shop txn ≥ 4 ครั้ง"><td class="tag-cell"><code>social_commerce_buyer</code></td><td>TikTok Shop txn ≥ 4 ครั้ง</td><td class="sig-cell">Merchant: TikTok Shop</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="crypto_curious" data-def="crypto exchange ≥ 1 ครั้ง"><td class="tag-cell"><code>crypto_curious</code></td><td>crypto exchange ≥ 1 ครั้ง</td><td class="sig-cell">Merchant: Bitkub</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="fintech_user" data-def="fintech platform บ่อย"><td class="tag-cell"><code>fintech_user</code></td><td>fintech platform บ่อย</td><td class="sig-cell">Merchant: TrueMoney</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="high_telecom_spender" data-def="telecom spend > P75"><td class="tag-cell"><code>high_telecom_spender</code></td><td>telecom spend > P75</td><td class="sig-cell">MCC: Telecom + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="device_upgrader" data-def="new device txn ≥ 1/ปี + high telecom"><td class="tag-cell"><code>device_upgrader</code></td><td>new device txn ≥ 1/ปี + high telecom</td><td class="sig-cell">MCC: Electronics + Telecom</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="saas_subscriber" data-def="software/SaaS recurring ≥ 3"><td class="tag-cell"><code>saas_subscriber</code></td><td>software/SaaS recurring ≥ 3</td><td class="sig-cell">Merchant: Adobe, Notion</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="ai_tool_user" data-def="AI platform txn (ChatGPT Plus, Midjourney)"><td class="tag-cell"><code>ai_tool_user</code></td><td>AI platform txn (ChatGPT Plus, Midjourney)</td><td class="sig-cell">Merchant: OpenAI</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="cashless_convert" data-def="contactless + online combo > 90%"><td class="tag-cell"><code>cashless_convert</code></td><td>contactless + online combo > 90%</td><td class="sig-cell">Payment + Channel</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="social_ads_spender" data-def="Facebook/Google/TikTok Ads txn ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>social_ads_spender</code></td><td>Facebook/Google/TikTok Ads txn ≥ 4 ครั้ง/ปี</td><td class="sig-cell">Merchant: Meta, Google Ads</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="e_wallet_heavy" data-def="e-wallet > 30% ของ txn"><td class="tag-cell"><code>e_wallet_heavy</code></td><td>e-wallet > 30% ของ txn</td><td class="sig-cell">Merchant: E-wallet</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="education & learning">
+  <div class="cat-header">
+    <span class="cat-emoji">🎓</span>
+    <span class="cat-name">Education & Learning</span>
+    <span class="cat-total">9 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">7 Existing</span><span class="cnt-pill cnt-ov">2 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="lifelong_learner" data-def="online course platform ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>lifelong_learner</code></td><td>online course platform ≥ 4 ครั้ง/ปี</td><td class="sig-cell">Merchant: Coursera, Udemy</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="language_learner" data-def="language school/app txn recurring"><td class="tag-cell"><code>language_learner</code></td><td>language school/app txn recurring</td><td class="sig-cell">Merchant: British Council</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="s" data-tag="professional_upskiller" data-def="certification / professional course ≥ 2 ครั้ง/ปี"><td class="tag-cell"><code>professional_upskiller</code></td><td>certification / professional course ≥ 2 ครั้ง/ปี</td><td class="sig-cell">MCC: Education + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="tutor_seeker" data-def="tutoring center txn recurring รายเดือน"><td class="tag-cell"><code>tutor_seeker</code></td><td>tutoring center txn recurring รายเดือน</td><td class="sig-cell">MCC: Education + Recurring</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="school_supply_buyer" data-def="stationery + kids spike ต้นปีการศึกษา"><td class="tag-cell"><code>school_supply_buyer</code></td><td>stationery + kids spike ต้นปีการศึกษา</td><td class="sig-cell">MCC combo + Timestamp</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="university_student" data-def="student merchant + dining + convenience + low spend"><td class="tag-cell"><code>university_student</code></td><td>student merchant + dining + convenience + low spend</td><td class="sig-cell">MCC combo + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="education_investor" data-def="high education spend > P75 across family"><td class="tag-cell"><code>education_investor</code></td><td>high education spend > P75 across family</td><td class="sig-cell">MCC: Education + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="stem_enthusiast" data-def="electronics + coding subscription + stationery combo"><td class="tag-cell"><code>stem_enthusiast</code></td><td>electronics + coding subscription + stationery combo</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="arts_student" data-def="art supplies + music instrument + performance txn"><td class="tag-cell"><code>arts_student</code></td><td>art supplies + music instrument + performance txn</td><td class="sig-cell">MCC: Stationery + Entertainment</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="real estate & housing">
+  <div class="cat-header">
+    <span class="cat-emoji">🏠</span>
+    <span class="cat-name">Real Estate & Housing</span>
+    <span class="cat-total">7 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">6 Existing</span><span class="cnt-pill cnt-ov">1 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="utility_payer" data-def="utility txn recurring รายเดือน"><td class="tag-cell"><code>utility_payer</code></td><td>utility txn recurring รายเดือน</td><td class="sig-cell">MCC: Utility + Recurring</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="high_utility_user" data-def="utility spend > P75"><td class="tag-cell"><code>high_utility_user</code></td><td>utility spend > P75</td><td class="sig-cell">MCC: Utility + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="condo_resident" data-def="utility + condo management fee recurring"><td class="tag-cell"><code>condo_resident</code></td><td>utility + condo management fee recurring</td><td class="sig-cell">MCC: Utility + Pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="home_appliance_buyer" data-def="white goods ≥ 1 ครั้ง/ปี + high amount"><td class="tag-cell"><code>home_appliance_buyer</code></td><td>white goods ≥ 1 ครั้ง/ปี + high amount</td><td class="sig-cell">MCC: Electronics/Household</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ov" data-source="overlap" data-path="a" data-stab="v" data-tag="diy_homeowner" data-def="hardware store + home improvement บ่อย"><td class="tag-cell"><code>diy_homeowner</code></td><td>hardware store + home improvement บ่อย</td><td class="sig-cell">Merchant: Global House</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ov">Overlap</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="property_market_watcher" data-def="real estate agent txn / property expo ≥ 1 ครั้ง/ปี"><td class="tag-cell"><code>property_market_watcher</code></td><td>real estate agent txn / property expo ≥ 1 ครั้ง/ปี</td><td class="sig-cell">MCC: Real Estate</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="rental_income_owner" data-def="irregular large incoming + utility multi-unit"><td class="tag-cell"><code>rental_income_owner</code></td><td>irregular large incoming + utility multi-unit</td><td class="sig-cell">Amount + Utility pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="investment & financial planning">
+  <div class="cat-header">
+    <span class="cat-emoji">📊</span>
+    <span class="cat-name">Investment & Financial Planning</span>
+    <span class="cat-total">6 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">6 Existing</span><span class="cnt-pill cnt-ov">0 Overlap</span><span class="cnt-pill cnt-new">0 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="stock_market_participant" data-def="brokerage txn ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>stock_market_participant</code></td><td>brokerage txn ≥ 4 ครั้ง/ปี</td><td class="sig-cell">Merchant: Settrade, Jitta</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="mutual_fund_investor" data-def="fund platform txn recurring"><td class="tag-cell"><code>mutual_fund_investor</code></td><td>fund platform txn recurring</td><td class="sig-cell">Merchant: FINNOMENA</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="gold_investor" data-def="gold shop / gold ETF txn ≥ 4 ครั้ง/ปี"><td class="tag-cell"><code>gold_investor</code></td><td>gold shop / gold ETF txn ≥ 4 ครั้ง/ปี</td><td class="sig-cell">Merchant: YLG, MTS Gold</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="v" data-tag="real_estate_investor" data-def="real estate agent + property expo + large amount"><td class="tag-cell"><code>real_estate_investor</code></td><td>real estate agent + property expo + large amount</td><td class="sig-cell">MCC: Real Estate + Amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="passive_income_seeker" data-def="investment + insurance + low consumption"><td class="tag-cell"><code>passive_income_seeker</code></td><td>investment + insurance + low consumption</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-ex" data-source="existing" data-path="a" data-stab="s" data-tag="financial_planner_client" data-def="insurance + investment + consistent saving"><td class="tag-cell"><code>financial_planner_client</code></td><td>insurance + investment + consistent saving</td><td class="sig-cell">MCC combo</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-ex">Existing</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="payment behavior *(มิติใหม่ — v2.2)*">
+  <div class="cat-header">
+    <span class="cat-emoji">💳</span>
+    <span class="cat-name">Payment Behavior *(มิติใหม่ — v2.2)*</span>
+    <span class="cat-total">8 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">0 Existing</span><span class="cnt-pill cnt-ov">0 Overlap</span><span class="cnt-pill cnt-new">8 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="full_payer" data-def="จ่ายยอดเต็ม ≥ 10 จาก 12 เดือนล่าสุด"><td class="tag-cell"><code>full_payer</code></td><td>จ่ายยอดเต็ม ≥ 10 จาก 12 เดือนล่าสุด</td><td class="sig-cell">Payment record vs statement</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="minimum_payer" data-def="จ่ายขั้นต่ำเท่านั้น ≥ 6 เดือน"><td class="tag-cell"><code>minimum_payer</code></td><td>จ่ายขั้นต่ำเท่านั้น ≥ 6 เดือน</td><td class="sig-cell">Payment amount = min due</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="revolving_user" data-def="carry balance ข้ามเดือน ≥ 3 เดือนติด"><td class="tag-cell"><code>revolving_user</code></td><td>carry balance ข้ามเดือน ≥ 3 เดือนติด</td><td class="sig-cell">Outstanding balance > 0</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="partial_payer" data-def="จ่าย > min แต่ < full สม่ำเสมอ ≥ 6 เดือน"><td class="tag-cell"><code>partial_payer</code></td><td>จ่าย > min แต่ < full สม่ำเสมอ ≥ 6 เดือน</td><td class="sig-cell">Payment amount pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="early_payer" data-def="จ่ายก่อน due date > 5 วัน สม่ำเสมอ ≥ 8 เดือน"><td class="tag-cell"><code>early_payer</code></td><td>จ่ายก่อน due date > 5 วัน สม่ำเสมอ ≥ 8 เดือน</td><td class="sig-cell">Payment date delta</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="late_payer_history" data-def="จ่ายหลัง due date ≥ 2 ครั้งใน 12 เดือน"><td class="tag-cell"><code>late_payer_history</code></td><td>จ่ายหลัง due date ≥ 2 ครั้งใน 12 เดือน</td><td class="sig-cell">Payment date delta</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="autopay_enrolled" data-def="ตั้ง autopay (full หรือ minimum)"><td class="tag-cell"><code>autopay_enrolled</code></td><td>ตั้ง autopay (full หรือ minimum)</td><td class="sig-cell">System flag</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="payment_irregular" data-def="วันจ่ายและ amount แปรผันสูง — ไม่มี pattern"><td class="tag-cell"><code>payment_irregular</code></td><td>วันจ่ายและ amount แปรผันสูง — ไม่มี pattern</td><td class="sig-cell">Payment date + amount variance</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="card relationship *(มิติใหม่ — v2.2)*">
+  <div class="cat-header">
+    <span class="cat-emoji">🃏</span>
+    <span class="cat-name">Card Relationship *(มิติใหม่ — v2.2)*</span>
+    <span class="cat-total">6 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">0 Existing</span><span class="cnt-pill cnt-ov">0 Overlap</span><span class="cnt-pill cnt-new">6 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="primary_card_signal" data-def="spend > P75 + ≥ 8 MCC category/เดือน สม่ำเสมอ"><td class="tag-cell"><code>primary_card_signal</code></td><td>spend > P75 + ≥ 8 MCC category/เดือน สม่ำเสมอ</td><td class="sig-cell">Spend breadth + amount</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="secondary_card_signal" data-def="spend < P25 + ≤ 2 MCC category + sporadic"><td class="tag-cell"><code>secondary_card_signal</code></td><td>spend < P25 + ≤ 2 MCC category + sporadic</td><td class="sig-cell">Low breadth + low frequency</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="limit_approacher" data-def="utilization 80–95% ≥ 4 เดือน (ไม่ถึง limit แต่ใกล้)"><td class="tag-cell"><code>limit_approacher</code></td><td>utilization 80–95% ≥ 4 เดือน (ไม่ถึง limit แต่ใกล้)</td><td class="sig-cell">Utilization pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="v" data-tag="benefit_chaser" data-def="spend spike ช่วง point multiplier / campaign period ≥ 3 ครั้ง/ปี"><td class="tag-cell"><code>benefit_chaser</code></td><td>spend spike ช่วง point multiplier / campaign period ≥ 3 ครั้ง/ปี</td><td class="sig-cell">Spend timing vs campaign calendar</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="v" data-tag="card_renewal_spiker" data-def="spend เพิ่ม > 30% ช่วง 1 เดือนก่อน anniversary"><td class="tag-cell"><code>card_renewal_spiker</code></td><td>spend เพิ่ม > 30% ช่วง 1 เดือนก่อน anniversary</td><td class="sig-cell">Spend trend + card age</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-v">V · Variable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="installment_converter" data-def="≥ 40% ของ large txn (> P75) แปลงเป็น installment"><td class="tag-cell"><code>installment_converter</code></td><td>≥ 40% ของ large txn (> P75) แปลงเป็น installment</td><td class="sig-cell">Installment conversion rate</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+</tbody>
+  </table>
+</section>
+<section class="cat-section" data-cat="spending momentum *(มิติใหม่ — v2.2)*">
+  <div class="cat-header">
+    <span class="cat-emoji">📈</span>
+    <span class="cat-name">Spending Momentum *(มิติใหม่ — v2.2)*</span>
+    <span class="cat-total">5 tags</span>
+    <div class="cat-pills"><span class="cnt-pill cnt-ex">0 Existing</span><span class="cnt-pill cnt-ov">0 Overlap</span><span class="cnt-pill cnt-new">5 New</span></div>
+  </div>
+  <table class="tag-table">
+    <thead>
+      <tr>
+        <th style="width:18%">Tag</th>
+        <th>Definition</th>
+        <th style="width:18%">Signal</th>
+        <th style="width:7%">Path</th>
+        <th style="width:9%">Source</th>
+        <th style="width:12%">Stability</th>
+      </tr>
+    </thead>
+    <tbody><tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="accelerating_spender" data-def="total monthly spend เพิ่ม ≥ 15% ต่อเนื่อง 3 เดือน"><td class="tag-cell"><code>accelerating_spender</code></td><td>total monthly spend เพิ่ม ≥ 15% ต่อเนื่อง 3 เดือน</td><td class="sig-cell">Month-over-month spend delta</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="decelerating_spender" data-def="total monthly spend ลด ≥ 15% ต่อเนื่อง 3 เดือน"><td class="tag-cell"><code>decelerating_spender</code></td><td>total monthly spend ลด ≥ 15% ต่อเนื่อง 3 เดือน</td><td class="sig-cell">Month-over-month spend delta</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="s" data-tag="stable_spender" data-def="CV of monthly spend < 0.15 ≥ 6 เดือน"><td class="tag-cell"><code>stable_spender</code></td><td>CV of monthly spend < 0.15 ≥ 6 เดือน</td><td class="sig-cell">Spend coefficient of variation</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-s">S · Stable</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="recovering_spender" data-def="inactive ≥ 2 เดือน แล้วกลับมา active ≥ 2 เดือนติด"><td class="tag-cell"><code>recovering_spender</code></td><td>inactive ≥ 2 เดือน แล้วกลับมา active ≥ 2 เดือนติด</td><td class="sig-cell">Spend gap + recovery pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+<tr class="row-new" data-source="new" data-path="a" data-stab="m" data-tag="boom_bust_spender" data-def="สลับ high/low month ≥ 4 รอบ/ปี (oscillation pattern)"><td class="tag-cell"><code>boom_bust_spender</code></td><td>สลับ high/low month ≥ 4 รอบ/ปี (oscillation pattern)</td><td class="sig-cell">Spend alternation pattern</td><td><span class="path path-a">Path A</span></td><td><span class="badge badge-new">New</span></td><td><span class="stab stab-m">M · Momentum</span></td></tr>
+</tbody>
+  </table>
+</section>
+</div>
+
+<!-- ── JS Filter Logic ── -->
+<script>
+const activeFilters = { source: new Set(), stab: new Set(), path: new Set() };
+
+function toggleFilter(dim, val) {
+  const key = dim + '_' + val;
+  const set = activeFilters[dim];
+  if (set.has(val)) {
+    set.delete(val);
+    document.querySelector(`.filter-btn[onclick="toggleFilter('${dim}','${val}')"]`).classList.remove('active');
+  } else {
+    set.add(val);
+    document.querySelector(`.filter-btn[onclick="toggleFilter('${dim}','${val}')"]`).classList.add('active');
+  }
+  applyFilters();
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchBox').value.toLowerCase();
+  let visible = 0;
+  document.querySelectorAll('.tag-table tbody tr').forEach(row => {
+    const srcMatch  = activeFilters.source.size === 0 || activeFilters.source.has(row.dataset.source);
+    const stabMatch = activeFilters.stab.size   === 0 || activeFilters.stab.has(row.dataset.stab);
+    const pathMatch = activeFilters.path.size   === 0 || activeFilters.path.has(row.dataset.path);
+    const textMatch = q === '' ||
+      row.dataset.tag.includes(q) ||
+      row.dataset.def.toLowerCase().includes(q);
+    if (srcMatch && stabMatch && pathMatch && textMatch) {
+      row.classList.remove('hidden'); visible++;
+    } else {
+      row.classList.add('hidden');
+    }
+  });
+  // Hide empty category sections
+  document.querySelectorAll('.cat-section').forEach(sec => {
+    const anyVisible = sec.querySelectorAll('tbody tr:not(.hidden)').length > 0;
+    sec.style.display = anyVisible ? '' : 'none';
+  });
+  document.getElementById('resultCount').textContent = visible + ' tags';
+}
+</script>
+</body>
+</html>
